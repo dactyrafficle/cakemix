@@ -1,74 +1,16 @@
 <html>
 
+
 <head>
  <meta charset='utf-8'>
  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+ <link rel="icon" href="cakemix.png">
+ <link rel="stylesheet" type="text/css" href="cakemix.css">
+ <style></style>
 </head>
 
 
-<style>
-
-html, body {
- font-family: monospace;
-}
-input {
- font-family: monospace;
-}
-
-.main {
-
-}
-.table {
- display: table;
-}
-.row {
- display: table-row-group;
-}
-.cell {
- display: table-cell;
- border-bottom: 1px solid #999;
- border-right: 1px solid #999;
- vertical-align: middle;
- height: 80px;
- padding-right: 3%;
- padding-left: 3%;
-}
-.row:nth-child(1) .cell {
- border-top: 1px solid #999;
-}
-.cell:nth-child(1) {
- border-left: 1px solid #999;
-}
-
-.row:nth-child(1) .cell:nth-child(1) {
- border-top: 1px solid #999;
- border-radius: 10% 0 0 0;
-}
-
-.cell {
- 
-}
-
-input {
- font-family: calibri;
- font-size: 30px;
- height: 60px;
- border: none;
- outline: none;
- font-weight: bold;
-}
-
-.green {
-  color: #06f;
-  font-size: 17px;
-}
-
-.output-cell {
- font-size: 17px;
-}
-
-
-</style>
+<script src='cakemix.js'></script>
 
 
 <div class='main' id='main'>
@@ -76,15 +18,15 @@ input {
  <div class='table' id=''>
   <div class='row input-row'>
    <div class='cell'>material</div>
-   <div class='cell'><input id='mtrl' placeholder='mtrl' value='704713'/></div>
+   <div class='cell'><input id='mtrl' class='hit' placeholder='mtrl' value='704699'/></div>
   </div>
   <div class='row input-row'>
    <div class='cell'>master</div>
-   <div class='cell'><input id='master' placeholder='master' value=''/></div>
+   <div class='cell'><input id='master' class='hit' placeholder='master' value='549'/></div>
   </div>
   <div class='row input-row'>
    <div class='cell'>pcat</div>
-   <div class='cell'><input id='pcat' placeholder='pcat' value=''/></div>
+   <div class='cell'><input id='pcat' class='hit' placeholder='pcat' value='OS1'/></div>
   </div>
   
 <!--  
@@ -127,219 +69,6 @@ input {
 
 
 
-<script>
-
-
-
-function noResults() {
- document.getElementById('mtrl').innerHTML = 'x';
- document.getElementById('master').innerHTML = 'x';
- document.getElementById('pcat').innerHTML = 'x';
- document.getElementById('pkg_date_code_id').innerHTML = 'x';
- document.getElementById('pkg_date_code_model').innerHTML = 'x';
- document.getElementById('cs_date_code_id').innerHTML = 'x';
- document.getElementById('cs_date_code_model').innerHTML = 'x';
- document.getElementById('z1_max_22').innerHTML = 'x';
- document.getElementById('en_max_40').innerHTML = 'x';
- document.getElementById('en_len').innerHTML = 'x';
-}
-
-function queryResultsArr(arr) {
- let x = [];
- let n = (arguments.length-1)/2; // number of conditions that need to be met
- for (let i = 0; i < arr.length; i++) {
-  let count = 0;  // hits in the row
-  for (let j = 1; j < arguments.length; j += 2) {
-    // key = arguments[j+0]
-    // val = arguments[j+1]
-    if (arguments[j+1] === arr[i][arguments[j]]) {
-     count++;
-     if (count === n) {
-      x.push(arr[i]);
-     } 
-    }
-  }
- }
- return x;
-}
-
-window.onload = function() {
-
- let arr = fetch('data.json?x=' + Math.random()).then(r => r.json()).then(arr => {
-
-
-  arr.sort(function(a,b) {
-   return a.master - b.master;
-  }).sort(function(a,b) {
-   return a.cat4c - b.cat4c;
-  });
-  console.log(arr);
-
-  let mtrlEl = document.getElementById('mtrl');
-  let masterEl = document.getElementById('master');
-  let pcatEl = document.getElementById('pcat');
-  
-  
-  // TEST INITIAL MTRL VALUE
-  let results = queryResultsArr(arr, 'mtrl_no', mtrlEl.value);
-  if (results.length > 0) {
-   document.getElementById('master').value = results[0].master;
-   document.getElementById('pcat').value = results[0].pcat_id;
-  } else {
-   masterEl.value = '';
-   pcatEl.value = '';
-   masterEl.placeholder = 'master';
-   pcatEl.placeholder = 'pcat';
-  }
-  
-  // MTRL VALUE EVENT LISTENER
-  mtrlEl.addEventListener('input', function() {
-   let results = queryResultsArr(arr, 'mtrl_no', this.value);
-   if (results.length > 0) {
-    masterEl.value = results[0].master;
-    pcatEl.value = results[0].pcat_id;
-   } else {
-    masterEl.value = '';
-    pcatEl.value = '';
-    masterEl.placeholder = 'master';
-    pcatEl.placeholder = 'pcat';
-   }
-  });
-  
-  // PCAT VALUE EVENT LISTENER
-  pcatEl.addEventListener('input', function() {
-   let master = masterEl.value;
-   let pcat = pcatEl.value.toUpperCase();
-   let results = queryResultsArr(arr, 'pcat_id', pcat, 'master', master);
-   if (results.length > 0) {
-    mtrlEl.value = results[0].mtrl_no;
-   } else {
-    mtrlEl.value = '';
-   }
-   
-   // THE CASE WHERE WE DELETE masterEl.value but pcatEl.value is legit
-   if (master === '') {
-    let results = queryResultsArr(arr, 'pcat_id', pcat, 'mtrl_active', '1');
-    if (results.length > 0) {
-     let m = 4;
-     masterEl.placeholder = '';
-     for (let k = 0; k < results.length; k++) {
-     
-      if (k < m) {
-       masterEl.placeholder += results[k].master;
-       
-       if (k != (m-1)) {
-        masterEl.placeholder += ', ';
-       } else {
-        masterEl.placeholder += '...';
-       }
-      } 
-     }
-    } else {
-      // no results
-      masterEl.placeholder = 'master';
-    }
-   }
-   
-   // THE CASE WHERE I DELETE pcatEl.value and masterEl.value is legit (and visa versa)
-   if (pcat === '') {
-    let results = queryResultsArr(arr, 'master', master, 'mtrl_active', '1');
-    if (results.length > 0) {
-     let m = 4;
-     pcatEl.placeholder = '';
-     for (let k = 0; k < results.length; k++) {
-     
-      if (k < m) {
-       pcatEl.placeholder += results[k].pcat_id;
-       
-       if (k != (m-1)) {
-        pcatEl.placeholder += ', ';
-       } else {
-        pcatEl.placeholder += '...';
-       }
-      } 
-     }
-    } else {
-      // no results
-      pcatEl.placeholder = 'pcat';
-    }
-   }
-   
-   
-  });
-  
-  // MASTER VALUE EVENT LISTENER
-  masterEl.addEventListener('input', function() {
-   let master = masterEl.value;
-   let pcat = pcatEl.value.toUpperCase();
-   let results = queryResultsArr(arr, 'pcat_id', pcat, 'master', master);
-   
-   // BOTH HITS
-   if (results.length > 0) {
-    mtrlEl.value = results[0].mtrl_no;
-   } else {
-    mtrlEl.value = '';
-   }
-   
-   // ONE HIT; ONE BLANK
-   // THE CASE WHERE I DELETE pcatEl.value and masterEl.value is legit (and visa versa)
-   if (pcat === '') {
-    let results = queryResultsArr(arr, 'master', master, 'mtrl_active', '1');
-    if (results.length > 0) {
-     let m = 4;
-     pcatEl.placeholder = '';
-     for (let k = 0; k < results.length; k++) {
-     
-      if (k < m) {
-       pcatEl.placeholder += results[k].pcat_id;
-       
-       if (k != (m-1)) {
-        pcatEl.placeholder += ', ';
-       } else {
-        pcatEl.placeholder += '...';
-       }
-      } 
-     }
-    } else {
-      // no results
-      pcatEl.placeholder = 'pcat';
-    }
-   }
-   
-   // ONE HIT; ONE BLANK
-   // THE CASE WHERE WE DELETE masterEl.value but pcatEl.value is legit
-   if (master === '') {
-    let results = queryResultsArr(arr, 'pcat_id', pcat, 'mtrl_active', '1');
-    if (results.length > 0) {
-     let m = 4;
-     masterEl.placeholder = '';
-     for (let k = 0; k < results.length; k++) {
-     
-      if (k < m) {
-       masterEl.placeholder += results[k].master;
-       
-       if (k != (m-1)) {
-        masterEl.placeholder += ', ';
-       } else {
-        masterEl.placeholder += '...';
-       }
-      } 
-     }
-    } else {
-      // no results
-      masterEl.placeholder = 'master';
-    }
-   }
-   
-   
-  });
-
-  
- }); // CLOSING FETCH
-
-} // CLOSING WINDOW.ONLOAD
-
-</script>
-
+<script></script>
 
 </html>
