@@ -4,24 +4,40 @@ function noResults() {
  document.getElementById('master').innerHTML = 'x';
  document.getElementById('pcat').innerHTML = 'x';
  document.getElementById('pkg_date_code_id').innerHTML = 'x';
- document.getElementById('pkg_date_code_model').innerHTML = 'x';
- document.getElementById('cs_date_code_id').innerHTML = 'x';
- document.getElementById('cs_date_code_model').innerHTML = 'x';
- document.getElementById('z1_max_22').innerHTML = 'x';
- document.getElementById('en_max_40').innerHTML = 'x';
- document.getElementById('en_len').innerHTML = 'x';
+ 
+
+
+
 }
 
-function gotAMatch() {
+function gotAMatch(obj) {
  document.getElementById('mtrl').classList.add('hit')
  document.getElementById('master').classList.add('hit');
  document.getElementById('pcat').classList.add('hit');
+ 
+ document.getElementById('pkg_date_code_id').innerHTML = obj.pkg_date_code_id;
+ document.getElementById('pkg_date_code_model').innerHTML = obj.pkg_date_code_model;
+ document.getElementById('cs_date_code_id').innerHTML = obj.cs_date_code_id;
+ document.getElementById('cs_date_code_model').innerHTML = obj.cs_date_code_model;
+
+ document.getElementById('z1_max_22').innerHTML = obj.z1_max_22;
+ document.getElementById('en_max_40').innerHTML = obj.en_max_40;
+ document.getElementById('en_len').innerHTML = obj.en_len;
+ 
 }
 
 function notAMatch() {
  document.getElementById('mtrl').classList.remove('hit')
  document.getElementById('master').classList.remove('hit');
  document.getElementById('pcat').classList.remove('hit');
+ 
+ document.getElementById('pkg_date_code_id').innerHTML = 'x';
+ document.getElementById('pkg_date_code_model').innerHTML = 'x';
+ document.getElementById('cs_date_code_id').innerHTML = 'x';
+ document.getElementById('cs_date_code_model').innerHTML = 'x';
+ document.getElementById('z1_max_22').innerHTML = 'x';
+ document.getElementById('en_max_40').innerHTML = 'x';
+ document.getElementById('en_len').innerHTML = 'x';
 }
 
 function queryResultsArr(arr) {
@@ -47,6 +63,7 @@ window.onload = function() {
 
  let arr = fetch('cakemix.json?x=' + Math.random()).then(r => r.json()).then(arr => {
 
+ let n_placeHolderSearch = 3;
 
   arr.sort(function(a,b) {
    return a.master - b.master;
@@ -63,7 +80,7 @@ window.onload = function() {
   // TEST INITIAL MTRL VALUE
   let results = queryResultsArr(arr, 'mtrl_no', mtrlEl.value);
   if (results.length > 0) {
-   gotAMatch();
+   gotAMatch(results[0]);
    document.getElementById('master').value = results[0].master;
    document.getElementById('pcat').value = results[0].pcat_id;
   } else {
@@ -77,7 +94,7 @@ window.onload = function() {
   mtrlEl.addEventListener('input', function() {
    let results = queryResultsArr(arr, 'mtrl_no', this.value);
    if (results.length > 0) {
-    gotAMatch();
+    gotAMatch(results[0]);
     masterEl.value = results[0].master;
     pcatEl.value = results[0].pcat_id;
    } else {
@@ -95,7 +112,7 @@ window.onload = function() {
    let pcat = pcatEl.value.toUpperCase();
    let results = queryResultsArr(arr, 'pcat_id', pcat, 'master', master);
    if (results.length > 0) {
-    gotAMatch();
+    gotAMatch(results[0]);
     mtrlEl.value = results[0].mtrl_no;
    } else {
     notAMatch();
@@ -113,7 +130,7 @@ window.onload = function() {
    if (master === '') {
     let results = queryResultsArr(arr, 'pcat_id', pcat, 'mtrl_active', '1');
     if (results.length > 0) {
-     let m = 4;
+     let m = n_placeHolderSearch;
      masterEl.placeholder = '';
      for (let k = 0; k < results.length; k++) {
      
@@ -123,7 +140,7 @@ window.onload = function() {
        if (k != (m-1)) {
         masterEl.placeholder += ', ';
        } else {
-        masterEl.placeholder += '...';
+        masterEl.placeholder += '...(' + results.length + ')';
        }
       } 
      }
@@ -137,7 +154,22 @@ window.onload = function() {
    if (pcat === '') {
     let results = queryResultsArr(arr, 'master', master, 'mtrl_active', '1');
     if (results.length > 0) {
-     let m = 4;
+
+     //console.log(results);
+     results.sort(function(a,b) {
+       let x = a.pcat_id;
+       let y = b.pcat_id;
+       if (x < y) {
+         return -1;
+       }
+       if (x > y) {
+         return 1;
+       }
+       return 0;
+     });
+     console.log(results);
+     
+     let m = n_placeHolderSearch;
      pcatEl.placeholder = '';
      for (let k = 0; k < results.length; k++) {
      
@@ -147,7 +179,7 @@ window.onload = function() {
        if (k != (m-1)) {
         pcatEl.placeholder += ', ';
        } else {
-        pcatEl.placeholder += '...';
+        pcatEl.placeholder += '...(' + results.length + ')';
        }
       } 
      }
@@ -169,7 +201,7 @@ window.onload = function() {
    
    // BOTH HITS
    if (results.length > 0) {
-    gotAMatch();
+    gotAMatch(results[0]);
     mtrlEl.value = results[0].mtrl_no;
    } else {
     notAMatch();
@@ -190,7 +222,7 @@ window.onload = function() {
    if (pcat === '') {
     let results = queryResultsArr(arr, 'master', master, 'mtrl_active', '1');
     if (results.length > 0) {
-     let m = 4;
+     let m = n_placeHolderSearch;
      pcatEl.placeholder = '';
      for (let k = 0; k < results.length; k++) {
      
@@ -200,7 +232,7 @@ window.onload = function() {
        if (k != (m-1)) {
         pcatEl.placeholder += ', ';
        } else {
-        pcatEl.placeholder += '...';
+        pcatEl.placeholder += '...(' + results.length + ')';
        }
       } 
      }
@@ -215,7 +247,7 @@ window.onload = function() {
    if (master === '') {
     let results = queryResultsArr(arr, 'pcat_id', pcat, 'mtrl_active', '1');
     if (results.length > 0) {
-     let m = 4;
+     let m = n_placeHolderSearch;
      masterEl.placeholder = '';
      for (let k = 0; k < results.length; k++) {
      
@@ -225,7 +257,7 @@ window.onload = function() {
        if (k != (m-1)) {
         masterEl.placeholder += ', ';
        } else {
-        masterEl.placeholder += '...';
+        masterEl.placeholder += '...(' + results.length + ')';
        }
       } 
      }
